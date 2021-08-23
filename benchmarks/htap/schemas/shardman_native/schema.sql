@@ -114,62 +114,43 @@ CREATE TABLE IF NOT EXISTS stock (
 )  WITH (distributed_by = 's_w_id', colocate_with = 'warehouse');
 
 CREATE TABLE IF NOT EXISTS item (
-  i_id int NOT NULL,
+  i_id int PRIMARY KEY,
   i_im_id int,
   i_name varchar(24),
   i_price decimal(5,2),
   i_data varchar(50)
-);
-END;
-
-BEGIN;
-ALTER TABLE item ADD CONSTRAINT item_pk PRIMARY KEY (i_id);
-SELECT shardman.make_table_global('item');
+)
+WITH (global);
 END;
 
 BEGIN;
 CREATE TABLE IF NOT EXISTS region (
-  r_regionkey int NOT NULL,
+  r_regionkey int PRIMARY KEY,
   r_name varchar(25) NOT NULL,
   r_comment varchar(152) NOT NULL
-);
-END;
-
-BEGIN;
-ALTER TABLE region ADD CONSTRAINT region_pk PRIMARY KEY (r_regionkey);
-SELECT shardman.make_table_global('region');
+)
+WITH(global);
 END;
 
 BEGIN;
 CREATE TABLE IF NOT EXISTS nation (
-  n_nationkey int NOT NULL,
+  n_nationkey int PRIMARY KEY,
   n_name varchar(25) NOT NULL,
   n_regionkey int NOT NULL,
   n_comment varchar(152) NOT NULL
-);
-END;
-
-BEGIN;
-ALTER TABLE nation ADD CONSTRAINT nation_pk PRIMARY KEY (n_nationkey);
-SELECT shardman.make_table_global('nation');
+)
+WITH(global);
 END;
 
 BEGIN;
 CREATE TABLE IF NOT EXISTS supplier (
-  su_suppkey int NOT NULL,
+  su_suppkey int PRIMARY KEY,
   su_name varchar(25) NOT NULL,
   su_address varchar(40) NOT NULL,
   su_nationkey int NOT NULL,
   su_phone varchar(15) NOT NULL,
   su_acctbal double precision NOT NULL,
   su_comment varchar(101) NOT NULL
-);
+)
+WITH(global);
 END;
-
-BEGIN;
-ALTER TABLE supplier ADD CONSTRAINT supplier_pk PRIMARY KEY (su_suppkey);
-SELECT shardman.make_table_global('supplier');
-END;
-
-
-
