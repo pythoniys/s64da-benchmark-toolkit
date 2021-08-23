@@ -66,12 +66,16 @@ class TransactionalWorker:
         # do not catch timeouts because we want that to stop the benchmark.
         # if we get timeouts the benchmark gets inbalanced and we eventually get
         # to a complete halt.
-        self.conn.cursor.execute(sql, args)
-        result = self.conn.cursor.fetchone()
-        if result[0] == True:
-            self.conn.conn.commit()
-            self.add_stats('new_order', 'ok', start)
-        else:
+        try:
+            self.conn.cursor.execute(sql, args)
+            result = self.conn.cursor.fetchone()
+            if result[0] == True:
+                self.conn.conn.commit()
+                self.add_stats('new_order', 'ok', start)
+            else:
+                self.conn.conn.rollback()
+                self.add_stats('new_order', 'error', start)
+        except psycopg2.errors.SerializationFailure:
             self.conn.conn.rollback()
             self.add_stats('new_order', 'error', start)
         self.conn.conn.autocommit = old_autocommit
@@ -123,7 +127,10 @@ class TransactionalWorker:
 
         sql = 'SELECT payment(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
         args = (w_id, d_id, c_d_id, c_id, c_w_id, h_amount, byname, c_last, timestamp)
-        self.execute_sql(sql, args, 'payment')
+        try:
+            self.execute_sql(sql, args, 'payment')
+        except psycopg2.errors.SerializationFailure:
+            self.conn.conn.rollback()
 
     def order_status(self):
         w_id = self.random.randint_inclusive(1, self.num_warehouses)
@@ -134,7 +141,10 @@ class TransactionalWorker:
 
         sql = 'SELECT * FROM order_status(%s, %s, %s, %s, %s)'
         args = (w_id, d_id, c_id, c_last, byname)
-        self.execute_sql(sql, args, 'order_status')
+        try:
+            self.execute_sql(sql, args, 'order_status')
+        except psycopg2.errors.SerializationFailure:
+            self.conn.conn.rollback()
 
     def delivery(self, timestamp):
         w_id = self.random.randint_inclusive(1, self.num_warehouses)
@@ -142,7 +152,10 @@ class TransactionalWorker:
 
         sql = 'SELECT * FROM delivery(%s, %s, %s, %s)'
         args = (w_id, o_carrier_id, DIST_PER_WARE, timestamp)
-        self.execute_sql(sql, args, 'delivery')
+        try:
+            self.execute_sql(sql, args, 'delivery')
+        except psycopg2.errors.SerializationFailure:
+            self.conn.conn.rollback()
 
     def stock_level(self):
         w_id = self.random.randint_inclusive(1, self.num_warehouses)
@@ -151,7 +164,10 @@ class TransactionalWorker:
 
         sql = 'SELECT * FROM stock_level(%s, %s, %s)'
         args = (w_id, d_id, level)
-        self.execute_sql(sql, args, 'stock_level')
+        try:
+            self.execute_sql(sql, args, 'stock_level')
+        except psycopg2.errors.SerializationFailure:
+            self.conn.conn.rollback()
 
     def next_transaction(self):
         timestamp_to_use = self.timestamp_generator.next()
