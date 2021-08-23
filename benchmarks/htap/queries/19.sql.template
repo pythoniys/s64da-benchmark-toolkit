@@ -8,7 +8,7 @@ from
 where
     ol_delivery_d >= '$min_date'
     and
-    (
+    ((
         ol_i_id = i_id
         and i_data like '%a'
         and ol_quantity >= 1
@@ -31,4 +31,4 @@ where
         and ol_quantity <= 10
         and i_price between 1 and 400000
         and ol_w_id in (1, 5, 3)
-    );
+    ));
