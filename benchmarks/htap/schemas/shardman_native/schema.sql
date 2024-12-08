@@ -121,18 +121,18 @@ CREATE TABLE IF NOT EXISTS item (
   i_data varchar(50)
 )
 WITH (global);
-END;
 
-BEGIN;
+
+
 CREATE TABLE IF NOT EXISTS region (
   r_regionkey int PRIMARY KEY,
   r_name varchar(25) NOT NULL,
   r_comment varchar(152) NOT NULL
 )
 WITH(global);
-END;
 
-BEGIN;
+
+
 CREATE TABLE IF NOT EXISTS nation (
   n_nationkey int PRIMARY KEY,
   n_name varchar(25) NOT NULL,
@@ -140,9 +140,9 @@ CREATE TABLE IF NOT EXISTS nation (
   n_comment varchar(152) NOT NULL
 )
 WITH(global);
-END;
 
-BEGIN;
+
+
 CREATE TABLE IF NOT EXISTS supplier (
   su_suppkey int PRIMARY KEY,
   su_name varchar(25) NOT NULL,
@@ -153,9 +153,9 @@ CREATE TABLE IF NOT EXISTS supplier (
   su_comment varchar(101) NOT NULL
 )
 WITH(global);
-END;
 
-BEGIN;
+
+
 ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk PRIMARY KEY (w_id);
 
 ALTER TABLE district ADD CONSTRAINT district_pk PRIMARY KEY (d_w_id, d_id);
@@ -171,9 +171,9 @@ ALTER TABLE new_orders ADD CONSTRAINT new_orders_pk PRIMARY KEY (no_w_id, no_d_i
 ALTER TABLE order_line ADD CONSTRAINT order_line_pk PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number);
 
 ALTER TABLE stock ADD CONSTRAINT stock_pk PRIMARY KEY (s_w_id, s_i_id);
-END;
 
-BEGIN;
+
+
 CREATE INDEX idx_customer ON customer (
     c_w_id
   , c_d_id
