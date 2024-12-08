@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS supplier (
 WITH(global);
 END;
 
+BEGIN;
 ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk PRIMARY KEY (w_id);
 
 ALTER TABLE district ADD CONSTRAINT district_pk PRIMARY KEY (d_w_id, d_id);
@@ -170,3 +171,24 @@ ALTER TABLE new_orders ADD CONSTRAINT new_orders_pk PRIMARY KEY (no_w_id, no_d_i
 ALTER TABLE order_line ADD CONSTRAINT order_line_pk PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number);
 
 ALTER TABLE stock ADD CONSTRAINT stock_pk PRIMARY KEY (s_w_id, s_i_id);
+END;
+
+BEGIN;
+CREATE INDEX idx_customer ON customer (
+    c_w_id
+  , c_d_id
+  , c_last
+);
+
+CREATE INDEX idx_orders ON orders (
+    o_w_id
+  , o_d_id
+  , o_c_id
+  , o_id
+);
+
+CREATE INDEX fkey_order_line ON order_line (
+    ol_supply_w_id
+  , ol_i_id
+);
+END;
