@@ -1,6 +1,6 @@
 BEGIN;
 CREATE TABLE IF NOT EXISTS warehouse (
-  w_id smallint NOT NULL,
+  w_id smallint PRIMARY KEY,
   w_name varchar(10),
   w_street_1 varchar(20),
   w_street_2 varchar(20),
