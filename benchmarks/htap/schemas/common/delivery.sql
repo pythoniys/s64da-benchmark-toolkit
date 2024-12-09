@@ -3,7 +3,7 @@ CREATE FUNCTION delivery(
     in_w_id INT
   , in_o_carrier_id INT
   , in_dist_per_ware INT
-  , in_timestamp TIMESTAMPTZ
+  , in_timestamp TIMESTAMP
 ) RETURNS VOID AS $$
 DECLARE
   d_id INT;
