@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS delivery(INT, INT, INT, TIMESTAMPTZ);
+DROP FUNCTION IF EXISTS delivery(INT, INT, INT, TIMESTAMP);
 CREATE FUNCTION delivery(
     in_w_id INT
   , in_o_carrier_id INT
