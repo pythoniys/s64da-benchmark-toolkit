@@ -8,7 +8,7 @@ CREATE FUNCTION new_order(
   , in_itemids INT[]
   , in_supware INT[]
   , in_qty INT[]
-  , in_timestamp TIMESTAMPTZ
+  , in_timestamp TIMESTAMP
 ) RETURNS BOOLEAN
 AS $$
 DECLARE
