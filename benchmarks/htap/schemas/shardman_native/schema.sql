@@ -121,18 +121,18 @@ CREATE TABLE IF NOT EXISTS item (
   i_data varchar(50)
 )
 WITH (global);
+END;
 
-
-
+BEGIN;
 CREATE TABLE IF NOT EXISTS region (
   r_regionkey int PRIMARY KEY,
   r_name varchar(25) NOT NULL,
   r_comment varchar(152) NOT NULL
 )
 WITH(global);
+END;
 
-
-
+BEGIN;
 CREATE TABLE IF NOT EXISTS nation (
   n_nationkey int PRIMARY KEY,
   n_name varchar(25) NOT NULL,
@@ -140,9 +140,9 @@ CREATE TABLE IF NOT EXISTS nation (
   n_comment varchar(152) NOT NULL
 )
 WITH(global);
+END;
 
-
-
+BEGIN;
 CREATE TABLE IF NOT EXISTS supplier (
   su_suppkey int PRIMARY KEY,
   su_name varchar(25) NOT NULL,
@@ -153,42 +153,4 @@ CREATE TABLE IF NOT EXISTS supplier (
   su_comment varchar(101) NOT NULL
 )
 WITH(global);
-
-
-
-ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk PRIMARY KEY (w_id);
-
-ALTER TABLE district ADD CONSTRAINT district_pk PRIMARY KEY (d_w_id, d_id);
-
-ALTER TABLE customer ADD CONSTRAINT customer_pk PRIMARY KEY (c_w_id, c_d_id, c_id);
-
---ALTER TABLE history ADD CONSTRAINT history_pk PRIMARY KEY (h_w_id);
-
-ALTER TABLE orders ADD CONSTRAINT orders_pk PRIMARY KEY (o_w_id, o_d_id, o_id);
-
-ALTER TABLE new_orders ADD CONSTRAINT new_orders_pk PRIMARY KEY (no_w_id, no_d_id, no_o_id);
-
-ALTER TABLE order_line ADD CONSTRAINT order_line_pk PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number);
-
-ALTER TABLE stock ADD CONSTRAINT stock_pk PRIMARY KEY (s_w_id, s_i_id);
-
-
-
-CREATE INDEX idx_customer ON customer (
-    c_w_id
-  , c_d_id
-  , c_last
-);
-
-CREATE INDEX idx_orders ON orders (
-    o_w_id
-  , o_d_id
-  , o_c_id
-  , o_id
-);
-
-CREATE INDEX fkey_order_line ON order_line (
-    ol_supply_w_id
-  , ol_i_id
-);
 END;
