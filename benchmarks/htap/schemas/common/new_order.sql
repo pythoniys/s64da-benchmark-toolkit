@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS new_order(INT, INT, INT, INT, INT, INT[], INT[], INT[], TIMESTAMPTZ);
+DROP FUNCTION IF EXISTS new_order(INT, INT, INT, INT, INT, INT[], INT[], INT[], TIMESTAMP);
 CREATE FUNCTION new_order(
     in_w_id INT
   , in_c_id INT
