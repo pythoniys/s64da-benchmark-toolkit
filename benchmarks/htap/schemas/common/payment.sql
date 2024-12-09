@@ -8,7 +8,7 @@ CREATE FUNCTION payment(
   , in_h_amount NUMERIC(12,2)
   , in_byname BOOL
   , in_c_last CHARACTER VARYING(16)
-  , in_timestamp TIMESTAMPTZ
+  , in_timestamp TIMESTAMP
 ) RETURNS VOID AS $$
 DECLARE
   w_record RECORD;
