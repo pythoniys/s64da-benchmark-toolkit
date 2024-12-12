@@ -121,421 +121,421 @@ CREATE TABLE IF NOT EXISTS item (
   i_data varchar(50)
 )
   
-WITH (global);
-DROP FUNCTION IF EXISTS delivery(INT, INT, INT, TIMESTAMPTZ);
-CREATE FUNCTION delivery(
-    in_w_id INT
-  , in_o_carrier_id INT
-  , in_dist_per_ware INT
-  , in_timestamp TIMESTAMPTZ
-) RETURNS VOID AS $$
-DECLARE
-  d_id INT;
-  this_no_o_id INT;
-  this_o_c_id INT;
-  ol_total NUMERIC(12,2);
-BEGIN
-  FOR d_id IN 1..in_dist_per_ware LOOP
-    SELECT COALESCE(MIN(no_o_id), 0)
-    FROM new_orders
-    WHERE no_d_id = d_id
-      AND no_w_id = in_w_id
-    INTO this_no_o_id;
+-- WITH (global);
+-- DROP FUNCTION IF EXISTS delivery(INT, INT, INT, TIMESTAMPTZ);
+-- CREATE FUNCTION delivery(
+--     in_w_id INT
+--   , in_o_carrier_id INT
+--   , in_dist_per_ware INT
+--   , in_timestamp TIMESTAMPTZ
+-- ) RETURNS VOID AS $$
+-- DECLARE
+--   d_id INT;
+--   this_no_o_id INT;
+--   this_o_c_id INT;
+--   ol_total NUMERIC(12,2);
+-- BEGIN
+--   FOR d_id IN 1..in_dist_per_ware LOOP
+--     SELECT COALESCE(MIN(no_o_id), 0)
+--     FROM new_orders
+--     WHERE no_d_id = d_id
+--       AND no_w_id = in_w_id
+--     INTO this_no_o_id;
 
-    DELETE FROM new_orders
-    WHERE no_o_id = this_no_o_id
-      AND no_d_id = d_id
-      AND no_w_id = in_w_id;
+--     DELETE FROM new_orders
+--     WHERE no_o_id = this_no_o_id
+--       AND no_d_id = d_id
+--       AND no_w_id = in_w_id;
 
-    SELECT o_c_id
-    FROM orders
-    WHERE o_id = this_no_o_id
-      AND o_d_id = d_id
-      AND o_w_id = in_w_id
-    INTO this_o_c_id;
+--     SELECT o_c_id
+--     FROM orders
+--     WHERE o_id = this_no_o_id
+--       AND o_d_id = d_id
+--       AND o_w_id = in_w_id
+--     INTO this_o_c_id;
 
-    UPDATE orders
-    SET o_carrier_id = in_o_carrier_id
-    WHERE o_id = this_no_o_id
-      AND o_d_id = d_id
-      AND o_w_id = in_w_id;
+--     UPDATE orders
+--     SET o_carrier_id = in_o_carrier_id
+--     WHERE o_id = this_no_o_id
+--       AND o_d_id = d_id
+--       AND o_w_id = in_w_id;
 
-    UPDATE order_line
-    SET ol_delivery_d = in_timestamp
-    WHERE ol_o_id = this_no_o_id
-      AND ol_d_id = d_id
-      AND ol_w_id = in_w_id;
+--     UPDATE order_line
+--     SET ol_delivery_d = in_timestamp
+--     WHERE ol_o_id = this_no_o_id
+--       AND ol_d_id = d_id
+--       AND ol_w_id = in_w_id;
 
-    SELECT SUM(ol_amount)
-    FROM order_line
-    WHERE ol_o_id = this_no_o_id
-      AND ol_d_id = d_id
-      AND ol_w_id = in_w_id
-    INTO ol_total;
+--     SELECT SUM(ol_amount)
+--     FROM order_line
+--     WHERE ol_o_id = this_no_o_id
+--       AND ol_d_id = d_id
+--       AND ol_w_id = in_w_id
+--     INTO ol_total;
 
-    UPDATE customer
-    SET c_balance = c_balance + ol_total
-      , c_delivery_cnt = c_delivery_cnt + 1
-    WHERE c_id = this_o_c_id
-      AND c_d_id = d_id
-      AND c_w_id = in_w_id;
-  END LOOP;
-END;
-$$ LANGUAGE plpgsql;
+--     UPDATE customer
+--     SET c_balance = c_balance + ol_total
+--       , c_delivery_cnt = c_delivery_cnt + 1
+--     WHERE c_id = this_o_c_id
+--       AND c_d_id = d_id
+--       AND c_w_id = in_w_id;
+--   END LOOP;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 
-DROP FUNCTION IF EXISTS new_order(INT, INT, INT, INT, INT, INT[], INT[], INT[], TIMESTAMPTZ);
-CREATE FUNCTION new_order(
-    in_w_id INT
-  , in_c_id INT
-  , in_d_id INT
-  , in_ol_cnt INT
-  , in_all_local INT
-  , in_itemids INT[]
-  , in_supware INT[]
-  , in_qty INT[]
-  , in_timestamp TIMESTAMPTZ
-) RETURNS BOOLEAN
-AS $$
-DECLARE
-  a RECORD;
-  b RECORD;
-  item_record RECORD;
-  stock_record RECORD;
+-- DROP FUNCTION IF EXISTS new_order(INT, INT, INT, INT, INT, INT[], INT[], INT[], TIMESTAMPTZ);
+-- CREATE FUNCTION new_order(
+--     in_w_id INT
+--   , in_c_id INT
+--   , in_d_id INT
+--   , in_ol_cnt INT
+--   , in_all_local INT
+--   , in_itemids INT[]
+--   , in_supware INT[]
+--   , in_qty INT[]
+--   , in_timestamp TIMESTAMPTZ
+-- ) RETURNS BOOLEAN
+-- AS $$
+-- DECLARE
+--   a RECORD;
+--   b RECORD;
+--   item_record RECORD;
+--   stock_record RECORD;
 
-  return_value RECORD;
+--   return_value RECORD;
 
-  ol_number INT;
-  ol_supply_w_id INT;
-  ol_i_id INT;
-  ol_quantity INT;
+--   ol_number INT;
+--   ol_supply_w_id INT;
+--   ol_i_id INT;
+--   ol_quantity INT;
 
-  ol_amount NUMERIC(6,2);
-BEGIN
-  SELECT
-      c_discount
-    , c_last
-    , c_credit
-    , w_tax
-  INTO a
-  FROM customer, warehouse
-  WHERE w_id = in_w_id
-    AND c_w_id = w_id
-    AND c_d_id = in_d_id
-    AND c_id = in_c_id;
+--   ol_amount NUMERIC(6,2);
+-- BEGIN
+--   SELECT
+--       c_discount
+--     , c_last
+--     , c_credit
+--     , w_tax
+--   INTO a
+--   FROM customer, warehouse
+--   WHERE w_id = in_w_id
+--     AND c_w_id = w_id
+--     AND c_d_id = in_d_id
+--     AND c_id = in_c_id;
 
-  UPDATE district
-  SET d_next_o_id = d_next_o_id + 1
-  WHERE d_id = in_d_id
-    AND d_w_id = in_w_id
-  RETURNING d_next_o_id, d_tax INTO b;
+--   UPDATE district
+--   SET d_next_o_id = d_next_o_id + 1
+--   WHERE d_id = in_d_id
+--     AND d_w_id = in_w_id
+--   RETURNING d_next_o_id, d_tax INTO b;
 
-  INSERT INTO orders(
-      o_id
-    , o_d_id
-    , o_w_id
-    , o_c_id
-    , o_entry_d
-    , o_ol_cnt
-    , o_all_local
-  ) VALUES (
-      b.d_next_o_id
-    , in_d_id
-    , in_w_id
-    , in_c_id
-    , in_timestamp
-    , in_ol_cnt
-    , in_all_local
-  );
+--   INSERT INTO orders(
+--       o_id
+--     , o_d_id
+--     , o_w_id
+--     , o_c_id
+--     , o_entry_d
+--     , o_ol_cnt
+--     , o_all_local
+--   ) VALUES (
+--       b.d_next_o_id
+--     , in_d_id
+--     , in_w_id
+--     , in_c_id
+--     , in_timestamp
+--     , in_ol_cnt
+--     , in_all_local
+--   );
 
-  INSERT INTO new_orders(no_o_id, no_d_id, no_w_id)
-  VALUES (b.d_next_o_id, in_d_id, in_w_id);
+--   INSERT INTO new_orders(no_o_id, no_d_id, no_w_id)
+--   VALUES (b.d_next_o_id, in_d_id, in_w_id);
 
-  FOR ol_number IN 1 .. in_ol_cnt LOOP
-    ol_i_id = in_itemids[ol_number];
+--   FOR ol_number IN 1 .. in_ol_cnt LOOP
+--     ol_i_id = in_itemids[ol_number];
 
-    SELECT i_price, i_name, i_data
-    INTO item_record
-    FROM item
-    WHERE i_id = ol_i_id;
+--     SELECT i_price, i_name, i_data
+--     INTO item_record
+--     FROM item
+--     WHERE i_id = ol_i_id;
 
-    IF item_record IS NULL THEN
-      RETURN FALSE;
-    END IF;
+--     IF item_record IS NULL THEN
+--       RETURN FALSE;
+--     END IF;
 
-    ol_supply_w_id = in_supware[ol_number];
-    ol_quantity = in_qty[ol_number];
+--     ol_supply_w_id = in_supware[ol_number];
+--     ol_quantity = in_qty[ol_number];
 
-    UPDATE stock
-    SET s_quantity = CASE
-          WHEN s_quantity > ol_quantity THEN s_quantity - ol_quantity
-          ELSE s_quantity - ol_quantity + 91
-        END
-      , s_order_cnt = s_order_cnt + 1
-      , s_remote_cnt = CASE
-                         WHEN ol_supply_w_id <> in_w_id THEN s_remote_cnt + 1
-                         ELSE s_remote_cnt
-                       END
-    WHERE s_i_id = ol_i_id
-      AND s_w_id = ol_supply_w_id
-    RETURNING
-        s_data, s_quantity,
-        CASE
-          WHEN in_d_id = 1 THEN s_dist_01
-          WHEN in_d_id = 2 THEN s_dist_02
-          WHEN in_d_id = 3 THEN s_dist_03
-          WHEN in_d_id = 4 THEN s_dist_04
-          WHEN in_d_id = 5 THEN s_dist_05
-          WHEN in_d_id = 6 THEN s_dist_06
-          WHEN in_d_id = 7 THEN s_dist_07
-          WHEN in_d_id = 8 THEN s_dist_08
-          WHEN in_d_id = 9 THEN s_dist_09
-          WHEN in_d_id = 10 THEN s_dist_10
-        END AS ol_dist_info
-    INTO stock_record;
+--     UPDATE stock
+--     SET s_quantity = CASE
+--           WHEN s_quantity > ol_quantity THEN s_quantity - ol_quantity
+--           ELSE s_quantity - ol_quantity + 91
+--         END
+--       , s_order_cnt = s_order_cnt + 1
+--       , s_remote_cnt = CASE
+--                          WHEN ol_supply_w_id <> in_w_id THEN s_remote_cnt + 1
+--                          ELSE s_remote_cnt
+--                        END
+--     WHERE s_i_id = ol_i_id
+--       AND s_w_id = ol_supply_w_id
+--     RETURNING
+--         s_data, s_quantity,
+--         CASE
+--           WHEN in_d_id = 1 THEN s_dist_01
+--           WHEN in_d_id = 2 THEN s_dist_02
+--           WHEN in_d_id = 3 THEN s_dist_03
+--           WHEN in_d_id = 4 THEN s_dist_04
+--           WHEN in_d_id = 5 THEN s_dist_05
+--           WHEN in_d_id = 6 THEN s_dist_06
+--           WHEN in_d_id = 7 THEN s_dist_07
+--           WHEN in_d_id = 8 THEN s_dist_08
+--           WHEN in_d_id = 9 THEN s_dist_09
+--           WHEN in_d_id = 10 THEN s_dist_10
+--         END AS ol_dist_info
+--     INTO stock_record;
 
-    ol_amount = ol_quantity * item_record.i_price * (1 + a.w_tax + b.d_tax) * (1 - a.c_discount);
+--     ol_amount = ol_quantity * item_record.i_price * (1 + a.w_tax + b.d_tax) * (1 - a.c_discount);
 
-    INSERT INTO order_line(
-        ol_o_id
-      , ol_d_id
-      , ol_w_id
-      , ol_number
-      , ol_i_id
-      , ol_supply_w_id
-      , ol_quantity
-      , ol_amount
-      , ol_dist_info
-    ) VALUES (
-        b.d_next_o_id
-      , in_d_id
-      , in_w_id
-      , ol_number
-      , ol_i_id
-      , ol_supply_w_id
-      , ol_quantity
-      , ol_amount
-      , stock_record.ol_dist_info
-    );
+--     INSERT INTO order_line(
+--         ol_o_id
+--       , ol_d_id
+--       , ol_w_id
+--       , ol_number
+--       , ol_i_id
+--       , ol_supply_w_id
+--       , ol_quantity
+--       , ol_amount
+--       , ol_dist_info
+--     ) VALUES (
+--         b.d_next_o_id
+--       , in_d_id
+--       , in_w_id
+--       , ol_number
+--       , ol_i_id
+--       , ol_supply_w_id
+--       , ol_quantity
+--       , ol_amount
+--       , stock_record.ol_dist_info
+--     );
 
-  END LOOP;
+--   END LOOP;
 
-  RETURN TRUE;
-END
-$$ LANGUAGE PLPGSQL PARALLEL SAFE;
+--   RETURN TRUE;
+-- END
+-- $$ LANGUAGE PLPGSQL PARALLEL SAFE;
 
-DROP FUNCTION IF EXISTS order_status(INT, INT, INT, VARCHAR, BOOL);
-CREATE FUNCTION order_status(
-    in_c_w_id INT
-  , in_c_d_id INT
-  , in_c_id INT
-  , in_c_last VARCHAR(24)
-  , in_byname BOOL
-) RETURNS VOID AS $$
-DECLARE
-  namecnt BIGINT;
-  customer_rec RECORD;
-  order_rec RECORD;
-  order_line_rec RECORD;
-BEGIN
-  IF in_byname THEN
-    SELECT count(c_id)
-    FROM customer
-    WHERE c_w_id = in_c_w_id
-      AND c_d_id = in_c_d_id
-      AND c_last = in_c_last
-    INTO namecnt;
+-- DROP FUNCTION IF EXISTS order_status(INT, INT, INT, VARCHAR, BOOL);
+-- CREATE FUNCTION order_status(
+--     in_c_w_id INT
+--   , in_c_d_id INT
+--   , in_c_id INT
+--   , in_c_last VARCHAR(24)
+--   , in_byname BOOL
+-- ) RETURNS VOID AS $$
+-- DECLARE
+--   namecnt BIGINT;
+--   customer_rec RECORD;
+--   order_rec RECORD;
+--   order_line_rec RECORD;
+-- BEGIN
+--   IF in_byname THEN
+--     SELECT count(c_id)
+--     FROM customer
+--     WHERE c_w_id = in_c_w_id
+--       AND c_d_id = in_c_d_id
+--       AND c_last = in_c_last
+--     INTO namecnt;
 
-    IF namecnt % 2 = 1 THEN
-      namecnt = namecnt + 1;
-    END IF;
+--     IF namecnt % 2 = 1 THEN
+--       namecnt = namecnt + 1;
+--     END IF;
 
-    SELECT c_balance, c_first, c_middle, c_last, c_id
-    FROM customer
-    WHERE c_w_id = in_c_w_id
-      AND c_d_id = in_c_d_id
-      AND c_last = in_c_last
-    ORDER BY c_first
-    OFFSET namecnt / 2
-    LIMIT 1
-    INTO customer_rec;
-  ELSE
-    SELECT c_balance, c_first, c_middle, c_last, c_id
-    FROM customer
-    WHERE c_w_id = in_c_w_id
-      AND c_d_id = in_c_d_id
-      AND c_id = in_c_id
-    INTO customer_rec;
-  END IF;
+--     SELECT c_balance, c_first, c_middle, c_last, c_id
+--     FROM customer
+--     WHERE c_w_id = in_c_w_id
+--       AND c_d_id = in_c_d_id
+--       AND c_last = in_c_last
+--     ORDER BY c_first
+--     OFFSET namecnt / 2
+--     LIMIT 1
+--     INTO customer_rec;
+--   ELSE
+--     SELECT c_balance, c_first, c_middle, c_last, c_id
+--     FROM customer
+--     WHERE c_w_id = in_c_w_id
+--       AND c_d_id = in_c_d_id
+--       AND c_id = in_c_id
+--     INTO customer_rec;
+--   END IF;
 
-  SELECT o_id, o_entry_d, o_carrier_id
-  FROM orders
-  WHERE o_w_id = in_c_w_id
-    AND o_d_id = in_c_d_id
-    AND o_c_id = in_c_id
-    AND o_id = (
-      SELECT max(o_id)
-      FROM orders
-      WHERE o_w_id = in_c_w_id
-        AND o_d_id = in_c_d_id
-        AND o_c_id = in_c_id
-    )
-  INTO order_rec;
-END
-$$ LANGUAGE PLPGSQL PARALLEL SAFE;
+--   SELECT o_id, o_entry_d, o_carrier_id
+--   FROM orders
+--   WHERE o_w_id = in_c_w_id
+--     AND o_d_id = in_c_d_id
+--     AND o_c_id = in_c_id
+--     AND o_id = (
+--       SELECT max(o_id)
+--       FROM orders
+--       WHERE o_w_id = in_c_w_id
+--         AND o_d_id = in_c_d_id
+--         AND o_c_id = in_c_id
+--     )
+--   INTO order_rec;
+-- END
+-- $$ LANGUAGE PLPGSQL PARALLEL SAFE;
 
-DROP FUNCTION IF EXISTS payment(INT, INT, INT, INT, INT, NUMERIC(12,2), BOOL, CHARACTER VARYING(16), TIMESTAMPTZ);
-CREATE FUNCTION payment(
-    in_w_id INT
-  , in_d_id INT
-  , in_c_d_id INT
-  , in_c_id INT
-  , in_c_w_id INT
-  , in_h_amount NUMERIC(12,2)
-  , in_byname BOOL
-  , in_c_last CHARACTER VARYING(16)
-  , in_timestamp TIMESTAMPTZ
-) RETURNS VOID AS $$
-DECLARE
-  w_record RECORD;
-  d_record RECORD;
-  namecount BIGINT;
-BEGIN
+-- DROP FUNCTION IF EXISTS payment(INT, INT, INT, INT, INT, NUMERIC(12,2), BOOL, CHARACTER VARYING(16), TIMESTAMPTZ);
+-- CREATE FUNCTION payment(
+--     in_w_id INT
+--   , in_d_id INT
+--   , in_c_d_id INT
+--   , in_c_id INT
+--   , in_c_w_id INT
+--   , in_h_amount NUMERIC(12,2)
+--   , in_byname BOOL
+--   , in_c_last CHARACTER VARYING(16)
+--   , in_timestamp TIMESTAMPTZ
+-- ) RETURNS VOID AS $$
+-- DECLARE
+--   w_record RECORD;
+--   d_record RECORD;
+--   namecount BIGINT;
+-- BEGIN
 
-  UPDATE warehouse
-  SET w_ytd = w_ytd + in_h_amount
-  WHERE w_id = in_w_id;
+--   UPDATE warehouse
+--   SET w_ytd = w_ytd + in_h_amount
+--   WHERE w_id = in_w_id;
 
-  SELECT
-      w_street_1
-    , w_street_2
-    , w_city
-    , w_state
-    , w_zip
-    , w_name
-  INTO w_record
-  FROM warehouse
-  WHERE w_id = in_w_id;
+--   SELECT
+--       w_street_1
+--     , w_street_2
+--     , w_city
+--     , w_state
+--     , w_zip
+--     , w_name
+--   INTO w_record
+--   FROM warehouse
+--   WHERE w_id = in_w_id;
 
-  UPDATE district
-  SET d_ytd = d_ytd + in_h_amount
-  WHERE d_w_id = in_w_id
-    AND d_id = in_d_id;
+--   UPDATE district
+--   SET d_ytd = d_ytd + in_h_amount
+--   WHERE d_w_id = in_w_id
+--     AND d_id = in_d_id;
 
-  SELECT
-      d_street_1
-    , d_street_2
-    , d_city
-    , d_state
-    , d_zip
-    , d_name
-  INTO d_record
-  FROM district
-  WHERE d_w_id = in_w_id
-    AND d_id = in_d_id;
+--   SELECT
+--       d_street_1
+--     , d_street_2
+--     , d_city
+--     , d_state
+--     , d_zip
+--     , d_name
+--   INTO d_record
+--   FROM district
+--   WHERE d_w_id = in_w_id
+--     AND d_id = in_d_id;
 
-  IF in_byname = true THEN
-    SELECT count(c_id)
-    FROM customer
-    INTO namecount
-    WHERE c_w_id = in_c_w_id
-      AND c_d_id = in_c_d_id
-      AND c_last = in_c_last;
+--   IF in_byname = true THEN
+--     SELECT count(c_id)
+--     FROM customer
+--     INTO namecount
+--     WHERE c_w_id = in_c_w_id
+--       AND c_d_id = in_c_d_id
+--       AND c_last = in_c_last;
 
-    IF namecount % 2 = 0 THEN
-      namecount = namecount + 1;
-    END IF;
+--     IF namecount % 2 = 0 THEN
+--       namecount = namecount + 1;
+--     END IF;
 
-    SELECT c_id
-    INTO in_c_id
-    FROM customer
-    WHERE c_w_id = in_c_w_id
-      AND c_d_id = in_c_d_id
-      AND c_last = in_c_last
-    ORDER BY c_first
-    OFFSET namecount / 2
-    LIMIT 1;
-  END IF;
+--     SELECT c_id
+--     INTO in_c_id
+--     FROM customer
+--     WHERE c_w_id = in_c_w_id
+--       AND c_d_id = in_c_d_id
+--       AND c_last = in_c_last
+--     ORDER BY c_first
+--     OFFSET namecount / 2
+--     LIMIT 1;
+--   END IF;
 
-  UPDATE customer
-  SET c_balance = c_balance - in_h_amount
-    , c_ytd_payment = c_ytd_payment + in_h_amount
-    , c_data =
-      CASE
-        WHEN c_credit = 'BC' THEN
-          substr(
-            format('| %4s %2s %4s %2s %4s $%s %12s %24s',
-                c_id
-              , c_d_id
-              , c_w_id
-              , in_d_id
-              , in_w_id
-              , to_char(in_h_amount, '9999999.99')
-              , extract(epoch from in_timestamp)
-              , c_data
-            ), 1, 500
-          )
-        ELSE c_data
-      END
-  WHERE c_w_id = in_c_w_id
-    AND c_d_id = in_c_d_id
-    AND c_id = in_c_id;
+--   UPDATE customer
+--   SET c_balance = c_balance - in_h_amount
+--     , c_ytd_payment = c_ytd_payment + in_h_amount
+--     , c_data =
+--       CASE
+--         WHEN c_credit = 'BC' THEN
+--           substr(
+--             format('| %4s %2s %4s %2s %4s $%s %12s %24s',
+--                 c_id
+--               , c_d_id
+--               , c_w_id
+--               , in_d_id
+--               , in_w_id
+--               , to_char(in_h_amount, '9999999.99')
+--               , extract(epoch from in_timestamp)
+--               , c_data
+--             ), 1, 500
+--           )
+--         ELSE c_data
+--       END
+--   WHERE c_w_id = in_c_w_id
+--     AND c_d_id = in_c_d_id
+--     AND c_id = in_c_id;
 
-  INSERT INTO history(
-      h_c_d_id
-    , h_c_w_id
-    , h_c_id
-    , h_d_id
-    , h_w_id
-    , h_date
-    , h_amount
-    , h_data
-  ) VALUES(
-      in_c_d_id
-    , in_c_w_id
-    , in_c_id
-    , in_d_id
-    , in_w_id
-    , in_timestamp
-    , in_h_amount
-    , format('%10s %10s    ', w_record.w_name, d_record.d_name)
-  );
-END
-$$
-LANGUAGE plpgsql PARALLEL SAFE;
+--   INSERT INTO history(
+--       h_c_d_id
+--     , h_c_w_id
+--     , h_c_id
+--     , h_d_id
+--     , h_w_id
+--     , h_date
+--     , h_amount
+--     , h_data
+--   ) VALUES(
+--       in_c_d_id
+--     , in_c_w_id
+--     , in_c_id
+--     , in_d_id
+--     , in_w_id
+--     , in_timestamp
+--     , in_h_amount
+--     , format('%10s %10s    ', w_record.w_name, d_record.d_name)
+--   );
+-- END
+-- $$
+-- LANGUAGE plpgsql PARALLEL SAFE;
 
-DROP FUNCTION IF EXISTS stock_level(INT, INT, INT);
-CREATE FUNCTION stock_level(
-    in_w_id INT
-  , in_d_id INT
-  , in_threshold INT
-) RETURNS INT AS $$
-DECLARE
-  this_d_next_o_id INT;
-  low_stock_count INT;
-BEGIN
-  SELECT d_next_o_id
-  FROM district
-  WHERE d_id = in_d_id
-    AND d_w_id = in_w_id
-  INTO this_d_next_o_id;
+-- DROP FUNCTION IF EXISTS stock_level(INT, INT, INT);
+-- CREATE FUNCTION stock_level(
+--     in_w_id INT
+--   , in_d_id INT
+--   , in_threshold INT
+-- ) RETURNS INT AS $$
+-- DECLARE
+--   this_d_next_o_id INT;
+--   low_stock_count INT;
+-- BEGIN
+--   SELECT d_next_o_id
+--   FROM district
+--   WHERE d_id = in_d_id
+--     AND d_w_id = in_w_id
+--   INTO this_d_next_o_id;
 
-  SELECT COUNT(DISTINCT(s_i_id))
-  FROM order_line, stock
-  WHERE ol_w_id = in_w_id
-    AND ol_d_id = in_d_id
-    AND ol_o_id <  this_d_next_o_id
-    AND ol_o_id >= this_d_next_o_id
-    AND s_w_id = in_w_id
-    AND s_i_id = ol_i_id
-    AND s_quantity < in_threshold
-  INTO low_stock_count;
+--   SELECT COUNT(DISTINCT(s_i_id))
+--   FROM order_line, stock
+--   WHERE ol_w_id = in_w_id
+--     AND ol_d_id = in_d_id
+--     AND ol_o_id <  this_d_next_o_id
+--     AND ol_o_id >= this_d_next_o_id
+--     AND s_w_id = in_w_id
+--     AND s_i_id = ol_i_id
+--     AND s_quantity < in_threshold
+--   INTO low_stock_count;
 
-  RETURN low_stock_count;
-END;
-$$ LANGUAGE plpgsql PARALLEL SAFE;
+--   RETURN low_stock_count;
+-- END;
+-- $$ LANGUAGE plpgsql PARALLEL SAFE;
 
-END;
+-- END;
 
 BEGIN;
 CREATE TABLE IF NOT EXISTS region (
