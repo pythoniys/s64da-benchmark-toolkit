@@ -1,4 +1,4 @@
--- ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk PRIMARY KEY (w_id);
+ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk PRIMARY KEY (w_id);
 
 ALTER TABLE district ADD CONSTRAINT district_pk PRIMARY KEY (d_w_id, d_id);
 
