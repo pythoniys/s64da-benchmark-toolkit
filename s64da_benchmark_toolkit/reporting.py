@@ -90,7 +90,7 @@ class Reporting:
             if self.scale_factor:
                 self._save_query_output(query_metric)
 
-            self.df = self.df.append(query_metric.dataframe)
+            self.df = self.df._append(query_metric.dataframe)
 
         self.df = self.df.reset_index(drop=True)
 
