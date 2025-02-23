@@ -288,23 +288,37 @@ class Stats:
 
     # TODO rework this summary, the output summary is kind of useless, probably should be more inline with the stdout display
     def write_summary(self, csv_file, elapsed):
-        with open(csv_file, 'w') as csv:           
-        # Копируем данные из csv_olap
-            if self.csv_olap:
-                self.csv_olap.seek(0)
-                csv.write(self.csv_olap.read())
+def write_summary(self, csv_file, elapsed):
+    with open(csv_file, 'w') as csv:
+        # Проверяем, открыт ли файл и можно ли его читать
+        if self.csv_olap and not self.csv_olap.closed:
+            self.csv_olap.close()
+        if self.csv_olap:
+            with open(self.csv_olap.name, 'r') as f:
+                csv.write(f.read())
                 csv.write('\n')
 
-            # Копируем данные из csv_olap_stream
-            # if self.csv_olap_stream:
-            #     self.csv_olap_stream.seek(0)
-            #     csv.write(self.csv_olap_stream.read())
-            #     csv.write('\n')
+        if self.csv_olap_stream and not self.csv_olap_stream.closed:
+            self.csv_olap_stream.close()
+        if self.csv_olap_stream:
+            with open(self.csv_olap_stream.name, 'r') as f:
+                csv.write(f.read())
+                csv.write('\n')
 
-            # Копируем данные из csv_oltp
-            if self.csv_oltp:
-                self.csv_oltp.seek(0)
-                csv.write(self.csv_oltp.read())
+        if self.csv_oltp and not self.csv_oltp.closed:
+            self.csv_oltp.close()
+        if self.csv_oltp:
+            with open(self.csv_oltp.name, 'r') as f:
+                csv.write(f.read())
+                csv.write('\n')
+
+        if self.csv_dbstats and not self.csv_dbstats.closed:
+            self.csv_dbstats.close()
+        if self.csv_dbstats:
+            with open(self.csv_dbstats.name, 'r') as f:
+                csv.write(f.read())
+                csv.write('\n')
+
         # row_nr = 0
         # with open(csv_file, 'w') as csv:
         #     csv.write(';stream_id;query_id;timestamp_start;timestamp_stop;runtime;status;correctness_check\n')
