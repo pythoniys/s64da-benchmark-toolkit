@@ -314,7 +314,7 @@ class Stats:
             #         csv.write(f.read())
             #         csv.write('\n')
 
-        # row_nr = 0
+        row_nr = 0
         with open(csv_file, 'w') as csv:
             csv.write(';stream_id;query_id;timestamp_start;timestamp_stop;runtime;status;correctness_check\n')
             # oltp stream = stream 0
