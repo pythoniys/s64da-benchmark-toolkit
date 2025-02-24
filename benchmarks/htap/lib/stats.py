@@ -288,7 +288,7 @@ class Stats:
 
     # TODO rework this summary, the output summary is kind of useless, probably should be more inline with the stdout display
     def write_summary(self, csv_file, elapsed):
-        with open(csv_file, 'w') as csv:
+        # with open(csv_file, 'w') as csv:
             # Проверяем, открыт ли файл и можно ли его читать
             
             # if self.csv_olap and not self.csv_olap.closed:
