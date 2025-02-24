@@ -305,12 +305,7 @@ class Stats:
             #         csv.write(f.read())
             #         csv.write('\n')
     
-            if self.csv_oltp and not self.csv_oltp.closed:
-                self.csv_oltp.close()
-            if self.csv_oltp:
-                with open(self.csv_oltp.name, 'r') as f:
-                    csv.write(f.read())
-                    csv.write('\n')
+
     
             # if self.csv_dbstats and not self.csv_dbstats.closed:
             #     self.csv_dbstats.close()
@@ -320,35 +315,42 @@ class Stats:
             #         csv.write('\n')
 
         # row_nr = 0
-        # with open(csv_file, 'w') as csv:
-        #     csv.write(';stream_id;query_id;timestamp_start;timestamp_stop;runtime;status;correctness_check\n')
-        #     # oltp stream = stream 0
-        #     stream_id = 0
-        #     fake_date = datetime.now()
-        #     elapsed_seconds = elapsed.total_seconds()
-        #     for query_type in QUERY_TYPES:
-        #         counters = self.oltp_counts(query_type)
-        #         tps, latency = self.oltp_total(query_type)
-        #         ok , err = counters
-        #         csv.write(f'{row_nr};{stream_id};{query_type}_total;{fake_date};{fake_date};{ok + err};OK;OK\n')
-        #         row_nr += 1
-        #         csv.write(f'{row_nr};{stream_id};{query_type}_tps;{fake_date};{fake_date};{tps};OK;OK\n')
-        #         row_nr += 1
-        #         csv.write(f'{row_nr};{stream_id};{query_type}_latency;{fake_date};{fake_date};{latency};OK;OK\n')
-        #         row_nr += 1
+        with open(csv_file, 'w') as csv:
+            csv.write(';stream_id;query_id;timestamp_start;timestamp_stop;runtime;status;correctness_check\n')
+            # oltp stream = stream 0
+            stream_id = 0
+            fake_date = datetime.now()
+            elapsed_seconds = elapsed.total_seconds()
+            for query_type in QUERY_TYPES:
+                counters = self.oltp_counts(query_type)
+                tps, latency = self.oltp_total(query_type)
+                ok , err = counters
+                csv.write(f'{row_nr};{stream_id};{query_type}_total;{fake_date};{fake_date};{ok + err};OK;OK\n')
+                row_nr += 1
+                csv.write(f'{row_nr};{stream_id};{query_type}_tps;{fake_date};{fake_date};{tps};OK;OK\n')
+                row_nr += 1
+                csv.write(f'{row_nr};{stream_id};{query_type}_latency;{fake_date};{fake_date};{latency};OK;OK\n')
+                row_nr += 1
  
         #     # now all olap streams
-        for stream_idx, stream in enumerate(self.data['olap']):
-            for query_id, stats in stream['queries'].items():
-                stream_id = stream_idx + 1 # so that the oltp stream can be 0
-                status = stats["status"].upper()
-                runtime = stats["runtime"]
-                if status == "RUNNING" and "last-status" in stats:
-                    # query is currently running, take the last status
-                    status = stats["last-status"].upper()
-                if not status in ["OK", "ERROR", "TIMEOUT"]:
-                    # anything that has not run (yet) we just set to timeout as
-                    # there was apparently no time to run it
-                    status = "TIMEOUT"
-                csv.write(f'{row_nr};{stream_id};{query_id};{fake_date};{fake_date};{runtime};{status};{status}\n')
-                row_nr += 1
+            for stream_idx, stream in enumerate(self.data['olap']):
+                for query_id, stats in stream['queries'].items():
+                    stream_id = stream_idx + 1 # so that the oltp stream can be 0
+                    status = stats["status"].upper()
+                    runtime = stats["runtime"]
+                    if status == "RUNNING" and "last-status" in stats:
+                        # query is currently running, take the last status
+                        status = stats["last-status"].upper()
+                    if not status in ["OK", "ERROR", "TIMEOUT"]:
+                        # anything that has not run (yet) we just set to timeout as
+                        # there was apparently no time to run it
+                        status = "TIMEOUT"
+                    csv.write(f'{row_nr};{stream_id};{query_id};{fake_date};{fake_date};{runtime};{status};{status}\n')
+                    row_nr += 1
+                    
+            if self.csv_oltp and not self.csv_oltp.closed:
+                self.csv_oltp.close()
+            if self.csv_oltp:
+                with open(self.csv_oltp.name, 'r') as f:
+                    csv.write(f.read())
+                    csv.write('\n')
