@@ -338,17 +338,17 @@ class Stats:
         #         row_nr += 1
  
         #     # now all olap streams
-            for stream_idx, stream in enumerate(self.data['olap']):
-                for query_id, stats in stream['queries'].items():
-                    stream_id = stream_idx + 1 # so that the oltp stream can be 0
-                    status = stats["status"].upper()
-                    runtime = stats["runtime"]
-                    if status == "RUNNING" and "last-status" in stats:
-                        # query is currently running, take the last status
-                        status = stats["last-status"].upper()
-                    if not status in ["OK", "ERROR", "TIMEOUT"]:
-                        # anything that has not run (yet) we just set to timeout as
-                        # there was apparently no time to run it
-                        status = "TIMEOUT"
-                    csv.write(f'{row_nr};{stream_id};{query_id};{fake_date};{fake_date};{runtime};{status};{status}\n')
-                    row_nr += 1
+        for stream_idx, stream in enumerate(self.data['olap']):
+            for query_id, stats in stream['queries'].items():
+                stream_id = stream_idx + 1 # so that the oltp stream can be 0
+                status = stats["status"].upper()
+                runtime = stats["runtime"]
+                if status == "RUNNING" and "last-status" in stats:
+                    # query is currently running, take the last status
+                    status = stats["last-status"].upper()
+                if not status in ["OK", "ERROR", "TIMEOUT"]:
+                    # anything that has not run (yet) we just set to timeout as
+                    # there was apparently no time to run it
+                    status = "TIMEOUT"
+                csv.write(f'{row_nr};{stream_id};{query_id};{fake_date};{fake_date};{runtime};{status};{status}\n')
+                row_nr += 1
